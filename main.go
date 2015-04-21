@@ -2,13 +2,10 @@
 package main
 
 import (
-	"bufio"
 	"errors"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
-	"os"
 	"runtime"
 )
 
@@ -71,32 +68,59 @@ func BuildTrie(filepaths ...string) {
 }
 
 func Analyse(out string, filepaths ...string) {
-
+	sumstr := []byte{}
 	for _, v := range filepaths {
-		fp, err := os.Open(v)
+		str, err := ioutil.ReadFile(v)
 		if err != nil {
 			log.Fatal(err)
 		}
-		defer fp.Close()
-		bufr := bufio.NewReader(fp)
-		for {
-			line, err := bufr.ReadSlice('\n')
-			if err != nil && err == io.EOF {
-				break
-			}
-			fmt.Println(line)
-		}
-		for {
-
+		sumstr = append(sumstr, str...)
+	}
+	sumLines := [1000001][]byte{}
+	order := 1
+	begin := 0
+	end := 0
+	for idx, v := range sumstr {
+		if v == 10 {
+			end = idx
+			sumLines[order] = sumstr[begin:end]
+			order += 1
+			begin = end + 1
 		}
 	}
+	countMap := make(map[string]int)
+	goLimit := make(chan int, 200)
+	lenMap := [101]chan int{}
+	for i := 1; i < 101; i++ {
+		lenMap[i] = make(chan int)
+	}
 
-	log.Println("printing !!!")
-	outbytes := []byte{}
-	ioutil.WriteFile(out, outbytes, 777)
+	for k, v := range sumLines {
+		if k != 0 && v == nil {
+			break
+		}
+		goLimit <- 1
+		go func(target []byte) {
+			for i := 1; i <= 100; i++ {
+				for j := 0; j < 10-i; j++ {
+					c := lenMap[i]
+					c <- 1
+					tmpSlice := target[j : j+i]
+					tmpStr := fmt.Sprintf("%s", tmpSlice)
+					if val, ok := countMap[tmpStr]; ok {
+						countMap[tmpStr] = val + 1
+					} else {
+						countMap[tmpStr] = 1
+					}
+					<-c
+				}
+			}
+			<-goLimit
+		}(v)
+	}
 }
 
 func main() {
 	runtime.GOMAXPROCS(4)
-	Analyse("out.log", "solexa_100_170_1.fa", "solexa_100_170_2.fa")
+	Analyse("out.log", "../all_gen.data")
 }
