@@ -96,10 +96,13 @@ func Analyse(out string, filepaths ...string) {
 	}
 
 	for k, v := range sumLines {
-		if k != 0 && v == nil {
+		if k == 0 {
+			continue
+		} else if v == nil {
 			break
 		}
 		goLimit <- 1
+		log.Println("analysing %d", k)
 		go func(target []byte) {
 			for i := 1; i <= 100; i++ {
 				for j := 0; j < 10-i; j++ {
