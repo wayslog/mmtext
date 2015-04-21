@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"runtime"
+	"sync"
 )
 
 type BitMap interface {
@@ -88,12 +89,8 @@ func Analyse(out string, filepaths ...string) {
 			begin = end + 1
 		}
 	}
-	countMap := make(map[string]int)
-	goLimit := make(chan int, 200)
-	lenMap := [101]chan int{}
-	for i := 1; i < 101; i++ {
-		lenMap[i] = make(chan int)
-	}
+	goLimit := make(chan int, 5)
+	wg := &sync.WaitGroup{}
 
 	for k, v := range sumLines {
 		if k == 0 {
@@ -102,25 +99,21 @@ func Analyse(out string, filepaths ...string) {
 			break
 		}
 		goLimit <- 1
-		log.Println("analysing %d", k)
-		go func(target []byte) {
+		//log.Printf("analysing %d", k)
+		wg.Add(1)
+		go func(w *sync.WaitGroup, glmt chan int, target []byte) {
+			defer w.Done()
 			for i := 1; i <= 100; i++ {
-				for j := 0; j < 10-i; j++ {
-					c := lenMap[i]
-					c <- 1
+				for j := 0; j < 100-i; j++ {
 					tmpSlice := target[j : j+i]
 					tmpStr := fmt.Sprintf("%s", tmpSlice)
-					if val, ok := countMap[tmpStr]; ok {
-						countMap[tmpStr] = val + 1
-					} else {
-						countMap[tmpStr] = 1
-					}
-					<-c
+					fmt.Printf("%s\n", tmpStr)
 				}
 			}
-			<-goLimit
-		}(v)
+			<-glmt
+		}(wg, goLimit, v)
 	}
+	wg.Wait()
 }
 
 func main() {
