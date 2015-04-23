@@ -68,7 +68,7 @@ func BuildTrie(filepaths ...string) {
 	}
 }
 
-func Analyse(out string, filepaths ...string) {
+func Analyse(trie *Trie, filepaths ...string) {
 	sumstr := []byte{}
 	for _, v := range filepaths {
 		str, err := ioutil.ReadFile(v)
@@ -106,8 +106,7 @@ func Analyse(out string, filepaths ...string) {
 			for i := 1; i <= 100; i++ {
 				for j := 0; j < 100-i; j++ {
 					tmpSlice := target[j : j+i]
-					tmpStr := fmt.Sprintf("%s", tmpSlice)
-					fmt.Printf("%s\n", tmpStr)
+					trie.Insert(tmpSlice, k, j)
 				}
 			}
 			<-glmt
@@ -118,5 +117,23 @@ func Analyse(out string, filepaths ...string) {
 
 func main() {
 	runtime.GOMAXPROCS(4)
-	Analyse("out.log", "../all_gen.data")
+	trie := NewTrie()
+	Analyse(trie, "../all_gen.data")
+	fmt.Println("Input Your Sequence:")
+	for {
+		str := ""
+		fmt.Scanf("%s", &str)
+		iter, err := trie.GenIterator([]byte(str))
+		lenOfStr := len(str)
+		if err != nil {
+			log.Println(err)
+		}
+		for {
+			one, two, err := iter.FetchNext()
+			if err != nil {
+				log.Println(err)
+			}
+			fmt.Printf("%d->(%d,%d)", one, two, two+lenOfStr)
+		}
+	}
 }
