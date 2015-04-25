@@ -34,8 +34,7 @@ func (t *Trie) Insert(path []byte, v1 int, v2 int) {
 		letter := path[i]
 		it := iter.Children[t.PosMap[letter]]
 		if it == nil {
-			it = NewTrieNode(letter)
-			iter.Children[t.PosMap[letter]] = it
+			iter.Children[t.PosMap[letter]] = NewTrieNode(letter)
 		}
 		iter = it
 	}

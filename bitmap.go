@@ -108,3 +108,32 @@ func (l *LinkedList) InsertByOrder(order, value int) {
 		ln = ln.Next
 	}
 }
+
+type LinkedOneNode struct {
+	Value int
+	Next  *LinkedOneNode
+}
+
+func NewLinedOneNode(v int) *LinkedOneNode {
+	l := &LinkedOneNode{Value: v, Next: nil}
+	return l
+}
+
+type LinkedOneList struct {
+	root *LinkedOneNode
+}
+
+func (l *LinkedOneList) PushFront(ln *LinkedOneNode) {
+	ln.Next = l.root.Next
+	l.root.Next = ln
+}
+
+func (l *LinkedOneList) PushOne(v1, v2 int) {
+	iv := v1 << 8
+	iv = iv & v2
+	ln := NewLinedOneNode(iv)
+	l.PushFront(ln)
+}
+func (l *LinkedOneList) FetchNG() *LinkedOneNode {
+	return l.root.Next
+}

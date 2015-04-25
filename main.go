@@ -118,7 +118,7 @@ func Analyse(trie *Trie, filepaths ...string) {
 func main() {
 	runtime.GOMAXPROCS(4)
 	trie := NewTrie()
-	Analyse(trie, "../all_gen.data")
+	Analyse(trie, "./all_gen.data")
 	fmt.Println("Input Your Sequence:")
 	for {
 		str := ""
