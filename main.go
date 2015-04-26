@@ -395,9 +395,9 @@ func main() {
 		log.Fatalf("%s is not avaliable k-mer", os.Args[1])
 	}
 	//BuildTrie(int32(klong), "../all_gen.data")
-	t := BuildTrie(int32(klong), "./all_gen.data")
-	prefix := []byte{}
-	WalkTrie(t.root, prefix)
+	t := BuildTrie(int32(klong), "../all_gen.data")
+	//prefix := []byte{}
+	//WalkTrie(t.root, prefix)
 	for {
 		fmt.Printf("Input Your Path(len=%d):", klong)
 		p := []byte{}
